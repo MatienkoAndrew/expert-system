@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+from .color import Color
 
 OPERATORS = ['!', '+', '|', '^', '(', ')']
 PRIORITY = {'!': 4, '+': 3, '|': 2, '^': 1}
@@ -14,7 +15,7 @@ class RPNParser:
 	@staticmethod
 	def infix_to_postfix(expression: list):
 		if len(expression) == 0:
-			raise BaseException(f"No rules for parsing")
+			raise BaseException(f"{Color.WARNING}No rules for parsing{Color.END}")
 
 		stack = []
 		output = ''
@@ -52,15 +53,15 @@ class RPNRule(RPNParser):
 
 		# check if ! in conclusion exp: => !(A + B)
 		if '+!' in self.right:
-			raise BaseException(f'Error at line : {rule} - Rule has bad format')
+			raise BaseException(f'{Color.WARNING}Error at line : {rule} - Rule has bad format{Color.END}')
 
 		# check if '|' in right exp: B | D <=> A
 		if self.type == ImplyType.EQUAL and '|' in self.left:
-			raise BaseException(f'Error at line : {rule} - Rule has bad format')
+			raise BaseException(f'{Color.WARNING}Error at line : {rule} - Rule has bad format{Color.END}')
 
 		# check if ! in conclusion or left, exp: D + C <=> !(A + B) OR !(A + B) <=> D + C
 		if self.type == ImplyType.EQUAL and ('+!' in self.right or '+!' in self.left):
-			raise BaseException(f'Error at line : {rule} - Rule has bad format')
+			raise BaseException(f'{Color.WARNING}Error at line : {rule} - Rule has bad format{Color.END}')
 
 	def __repr__(self):
 		return f'<RPN Rule> left: {self.left}, right: {self.right}, type: {self.type}'

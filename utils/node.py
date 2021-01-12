@@ -1,4 +1,5 @@
 from enum import Enum
+from .color import Color
 
 
 class ConnectorType(Enum):
@@ -23,7 +24,7 @@ class Node:
 
 	def set_state(self, state, is_fixed: bool):
 		if self.state_fixed is True and is_fixed is True and self.state is not None and self.state != state:
-			raise BaseException(f'Node received two different states')
+			raise BaseException(f'{Color.WARNING}Node received two different states{Color.END}')
 
 		self.state = state
 		self.state_fixed = is_fixed
@@ -106,7 +107,7 @@ class ConnectorNode(Node):
 
 	def add_operand(self, operand: Node):
 		if self.type is ConnectorType.IMPLY and self.operands.__len__() > 0:
-			raise BaseException("An imply connection must only have one operand")
+			raise BaseException(f"{Color.WARNING}An imply connection must only have one operand{Color.END}")
 		self.operands.append(operand)
 		if self.is_root is False and self.type is not ConnectorType.IMPLY and self not in operand.operand_parents:
 			operand.operand_parents.append(self)
@@ -160,13 +161,13 @@ class ConnectorNode(Node):
 class NegativeNode(Node):
 	def __init__(self, child: Node):
 		if child is None:
-			raise BaseException(f'Negative Node has to have child')
+			raise BaseException(f'{Color.WARNING}Negative Node has to have child{Color.END}')
 		super(NegativeNode, self).__init__(None)
 		self.state = None
 		self.add_child(child)
 
 	def __repr__(self):
-		return f'{self.children[0]}'
+		return f'!{self.children[0]}'
 
 	def add_child(self, child: Node):
 		super(NegativeNode, self).add_child(child)

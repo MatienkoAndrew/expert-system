@@ -1,14 +1,31 @@
 import re
 from .node import ConnectorType, ConnectorNode, AtomNode, NegativeNode
 from .rpn_parser import ImplyType, OPERATORS
+from .color import Color
 
 LST_OP = {'+': ConnectorType.AND, '|': ConnectorType.OR, '^': ConnectorType.XOR}
+
+
+class Validation:
+	def __init__(self, left, right):
+		self.left = left
+		self.right = right
+
+	def __repr__(self):
+		return f'.left {self.left} .right {self.right}'
+
+	def validate(self):
+		left_res = self.left.decide()
+		right_res = self.right.decide()
+		if left_res is True and right_res is False:
+			raise BaseException(f'{Color.WARNING}ERROR: {self} (True => False) is invalid{Color.END}')
 
 
 class Tree:
 	def __init__(self):
 		self.atoms = {}
 		self.connectors = []
+		self.valid_data = []
 		self.root_node = ConnectorNode(ConnectorType.AND, self)
 		self.root_node.is_root = True
 
@@ -27,7 +44,7 @@ class Tree:
 	def set_atom_state(self, atom_name: str, value):
 		atom = self.atoms.get(atom_name)
 		if atom is None:
-			raise BaseException(f"{atom_name} doesn't have any known atom")
+			raise BaseException(f"{Color.WARNING}{atom_name} doesn't have any known atom{Color.END}")
 		atom.state = value
 		if value is True:
 			atom.state_fixed = True
@@ -35,12 +52,18 @@ class Tree:
 	def decide_query(self, query: str):
 		atom = self.atoms.get(query)
 		if atom is None:
-			raise BaseException(f"[ERROR] The query {query} doesn't know any atoms")
+			raise BaseException(f"{Color.WARNING}[ERROR] The query {query} doesn't know any atoms{Color.END}")
 		res = atom.decide()
 		if res is None:
 			atom.set_state(False, True)
 			res = False
+
+		self.check_validation()
 		return res
+
+	def check_validation(self):
+		for valid in self.valid_data:
+			valid.validate()
 
 
 class RPNTree(Tree):
@@ -70,17 +93,19 @@ class RPNTree(Tree):
 
 	def set_relations(self, rpn_rules: list):
 		if len(self.atoms) is 0:
-			raise BaseException(f'Tree is empty')
+			raise BaseException(f'{Color.WARNING}Tree is empty{Color.END}')
 		for rule in rpn_rules:
 			left = self.get_relations(rule.left)
 			right = self.get_relations(rule.right)
 			imply_connect = self.create_connect(ConnectorType.IMPLY)
 			right.add_child(imply_connect)
 			imply_connect.add_operand(left)
+			self.valid_data.append(Validation(left, right))
 			if rule.type is ImplyType.EQUAL:
 				imply_connect1 = self.create_connect(ConnectorType.IMPLY)
 				left.add_child(imply_connect1)
 				imply_connect1.add_operand(right)
+				self.valid_data.append(Validation(right, left))
 
 	def get_relations(self, rule: str):
 		stack = []

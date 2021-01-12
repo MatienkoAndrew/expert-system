@@ -1,4 +1,5 @@
 from .rpn_parser import RPNRule
+from .color import Color
 import re
 
 
@@ -68,36 +69,36 @@ class Parser:
 				self.atoms = self.find_all_atoms(rules)
 				fact -= 1
 				if fact < 0:
-					raise BaseException(f"Error at line: {line1} - Facts were defined")
+					raise BaseException(f"{Color.WARNING}Error at line: {line1} - Facts were defined{Color.END}")
 				if query <= 0:
-					raise BaseException(f'Error at line: {line1} - Facts must be defined before queries')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Facts must be defined before queries{Color.END}')
 				if not Parser.check_atoms(self.atoms, line):
-					raise BaseException(f'Error at line: {line1} - Fact was not defined in rules')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Fact was not defined in rules{Color.END}')
 				if pattern_facts.match(line) is None:
-					raise BaseException(f'Error at line: {line1} - Fact has bad format')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Fact has bad format{Color.END}')
 			elif line[0] == "?":
 				len_queries = len(list(filter(None, re.findall("[A-Z]*", line))))
 				self.queries = re.findall(r".", list(filter(None, re.findall("[A-Z]*", line)))[0]) if len_queries != 0 else []
 				query -= 1
 				if fact > 0:
-					raise BaseException(f'Error at line: {line1} - Facts were not defined')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Facts were not defined{Color.END}')
 				if not Parser.check_atoms(self.atoms, line):
-					raise BaseException(f'Error at line: {line1} - Queries was not defined in rules')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Queries was not defined in rules{Color.END}')
 				if pattern_queries.match(line) is None:
-					raise BaseException(f'Error at line: {line1} - Query has bad format')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Query has bad format{Color.END}')
 			else:
 				self.rules.append(line)
 				rule -= 1
 				if fact <= 0:
-					raise BaseException(f'Error at line: {line1} - Rules must be defined before facts')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Rules must be defined before facts{Color.END}')
 				if query <= 0:
-					raise BaseException(f'Error at line: {line1} - Rules must be defined before queries')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Rules must be defined before queries{Color.END}')
 				if pattern_rules.match(line) is None:
-					raise BaseException(f'Error at line: {line1} - Rule has bad format')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Rule has bad format{Color.END}')
 				if not Parser.ft_check_parentheses(line):
-					raise BaseException(f'Error at line: {line1} - Rule has bad parentheses')
+					raise BaseException(f'{Color.WARNING}Error at line: {line1} - Rule has bad parentheses{Color.END}')
 				else:
 					rules.append(line)
 
 		if fact > 0 or query > 0 or rule > 0:
-			raise BaseException(f'Miss rule or fact or query')
+			raise BaseException(f'{Color.WARNING}Miss rule or fact or query{Color.END}')
